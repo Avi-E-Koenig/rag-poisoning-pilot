@@ -4,7 +4,7 @@ Goal: decide how far the claims in `report.md` can be trusted, by (a) auditing c
 statically, (b) reproducing the run locally, and (c) testing whether the conclusions survive
 fixes and variations of the method.
 
-Status: **draft**, branch `verify/plan`, 2026-11-15.
+Status: **draft v2** (phases revised after the provenance findings), branch `verify/plan`, 2026-11-15.
 
 ---
 
@@ -50,9 +50,9 @@ Source: [`verification/context/perplexity-thread.md`](verification/context/perpl
 
 Target machine: WSL2, Python 3.12, RTX 4050 Laptop GPU (6 GB).
 
-1. Create `.venv` and install pinned `fastembed rank_bm25 requests matplotlib numpy` into `requirements.lock`.
-2. Generator: run `llama-server` (llama.cpp, CUDA build or the `llama-cpp-python[server]` package) with `Qwen2.5-0.5B-Instruct-Q4_K_M.gguf` from the official Qwen HF repo. Record the model's sha256.
-3. Pin and record the llama.cpp version, seed, and CPU vs GPU. Temperature 0 is only *mostly* deterministic across backends.
+1. Create `.venv` with **`uv`** (`python3 -m venv` is unavailable here because the `python3.12-venv` package is missing). Install pinned `fastembed rank_bm25 requests matplotlib numpy` and record them in `requirements.lock`.
+2. Generator: use the **same build as the original**, llama.cpp `b12389` CPU (`llama-b12389-bin-ubuntu-x64.tar.gz`), with `--threads 2 -c 4096` and `qwen2.5-0.5b-instruct-q4_k_m.gguf` from the official Qwen HF repo. Check the file size is 491,400,032 bytes and record its sha256. A GPU build is only for the later model-sweep phases.
+3. Record the llama.cpp version and the seed. Temperature 0 is only *mostly* deterministic across builds, which is another reason the anchor run uses the original's CPU build.
 4. Isolation: run the scripts with `python -I` from the venv. Network egress goes only to `en.wikipedia.org` and `localhost:8080` (already confirmed by reading the code).
 
 ## 2. Reproduction tiers
@@ -60,7 +60,7 @@ Target machine: WSL2, Python 3.12, RTX 4050 Laptop GPU (6 GB).
 | Tier | What | Pass criterion |
 |---|---|---|
 | R1 | Re-score the shipped `results.json` (no model) | The report's tables match the raw JSON. *Already matches, except F4 and F5.* |
-| R2 | Re-run `run_experiment.py` on the **shipped** `corpus.json` + `poisons.json` | Per-arm ASR is within ±1 of the report, and per-question answers agree on most questions |
+| R2 | **Single-code-version anchor run** (P3): delete `results.json` and run all 7 arms from one commit on the **shipped** `corpus.json` + `poisons.json`, in the original environment. Log the git SHA, the model hash and the llama.cpp build in the output. | Not "match 18/20". The goal is a clean, attributable baseline. Report per-arm deltas against the shipped results and the per-question agreement. Any difference beyond ±2 on an arm gets investigated (code drift vs nondeterminism vs Wikipedia drift in arm 7). |
 | R3 | Full rebuild: `build_corpus.py` with a fresh Wikipedia fetch, then `gen_poison.py` ×5 seeds, then run the experiment | Same qualitative ordering of the arms. Report the variance across seeds. |
 
 ## 3. Methodology stress tests (do the conclusions survive?)
@@ -129,10 +129,26 @@ Methodology references for the stress tests:
 
 ## 5. Deliverables
 
-- `verification/` folder holding scripts, lockfile, model hash, and the raw results from each tier
-- `VERIFICATION_REPORT.md` giving a per-claim verdict (Confirmed / Partially / Not supported / By construction) with evidence
+- `verification/` folder holding scripts, lockfile, model hash, the pre-registration, and the raw results from each phase
+- `VERIFICATION_REPORT.md` with a **credibility verdict table**: one row per claim in `report.md` (H1, H2, H3, the §5 findings, the §7 conclusions and the headline framing). Each row gets one verdict:
+  - **Confirmed**: reproduces, and survives the stress tests
+  - **Partially supported**: the direction holds but the magnitude or generality is overstated
+  - **By construction**: true only because of how the code is written (e.g. F1, F2)
+  - **Not supported**: contradicted by our runs
+  - **Unverifiable**: e.g. depends on a citation that doesn't resolve
+
+  Each row links to its evidence (finding ID, run ID, citation check).
 - Optional upstream issue/PR to Blobi92 covering F1, F4 and F12
 
-## 6. Proposed order
+## 6. Phases (revised after the provenance findings)
 
-Phase A: R1 (done) and citation checks (cheap). Phase B: environment setup and R2. Phase C: stress tests 1, 2, 4 and 5 (the core credibility questions). Phase D: R3 and tests 3, 6, 7 and 8 (robustness).
+Ordering principle: cheap checks first, then a clean anchor run, then **commit the expectations before running any new arm**, so that we don't repeat P2.
+
+| Phase | What | Covers | Exit criterion |
+|---|---|---|---|
+| **A. Citations** | Check the 6 sources cited in `report.md` §8 plus the specific figures the report relies on: PoisonedRAG "≈90% with 5 texts", the DDoSci figures (49.56% / 6.0% / 0.0% / 77.33%), the INSS Memo 256 claims, and the hybrid-retrieval claim from 2603.18034. Do a light existence check on the other sources in the reference table; the vendor blogs only need to resolve. | P7, P11, F13, test 9 | `verification/citations.md`: for each source, whether it resolves, whether it says what it is cited for, and a quote/page |
+| **B. Environment + anchor run** | §1 setup in the original environment, then R1 (done) and R2 as a single-code-version run | P3, P8, tests 11–12 | `verification/runs/r2/` with results and run metadata, plus a delta table against the shipped `results.json` |
+| **C. Pre-registration** | Before any new arm runs, write and commit `verification/PREREGISTRATION.md`: hypotheses, arms 7′ (honest content verification), 8 (real compromised canonical source) and 9 (snapshot verification), metrics, the scoring rules (normalization, aliases, target correct-rate), the statistical tests, and the expected outcome for each arm. **Stopping rule:** every pre-registered arm is reported, and anything added later is labeled exploratory. | P2, P10, test 10 | The pre-registration commit SHA exists *before* any Phase D results |
+| **D. Claim-deciding tests** | Stress tests 1, 2, 3 (arms 7′/8/9), 4 (scoring) and 5 (Wilson CIs, McNemar, 5 poison seeds × 3 generator seeds) | F1, F2, F3, F7, F8, P4, P5 | Pre-registered results for every arm, plus a verdict on report §7 conclusion 3 ("content verification is the only defense…") |
+| **E. Robustness (exploratory)** | Stress tests 6 (bigger generators, GPU), 7 (poison quality/budget), 8 (defense parameter sweeps, RRF k=60), and R3 (fresh corpus rebuild) | F5, F6, F8–F11 | Results labeled as exploratory, showing whether any Phase D verdict flips |
+| **F. Report** | `VERIFICATION_REPORT.md` with the verdict table, a methods section, and the open issues for upstream | all | PR ready for review |
