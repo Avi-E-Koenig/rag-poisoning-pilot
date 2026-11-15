@@ -126,7 +126,9 @@ def screen(docs, vecs):
         return sum(sorted(counts.values(), reverse=True)[:3]) / len(toks)
 
     scores = np.array([stuffing(t) for t in texts])
-    trusted = np.array([not d.get("is_poison") for d in docs])
+    # As upstream: calibrate on docs *tagged* trusted (the defender cannot see ground truth;
+    # in the compromised arms the relabeled poison is tagged trusted too).
+    trusted = np.array([bool(d.get("trusted", False)) for d in docs])
     mu, sd = scores[trusted].mean(), scores[trusted].std() + 1e-9
     stuff = scores > mu + 4 * sd
     dup, kept = [False] * len(docs), []
@@ -279,7 +281,8 @@ def build_arms(corpus, poisons, live, manifest):
         "5_screen+hybrid": {"docs": corpus + p_comp, "screen": True, "hybrid": True},
         "6_screen+corroborate": {"docs": corpus + p_comp, "screen": True, "corroborate": True},
         "7p_content-verify-honest": {"docs": arm7, "pool": len(pool7)},
-        "8_compromised-canonical+verify": {"docs": arm8, "pool": len(compromised_corpus)},
+        "8_compromised-canonical+verify": {"docs": arm8, "pool": len(compromised_corpus),
+                                           "pool_trusted": sum(not d["is_poison"] for d in compromised_corpus)},
         "8nv_compromised-canonical-noverify": {"docs": compromised_corpus},
         "9_snapshot-manifest": {"docs": arm9, "pool": len(corpus) + len(p_comp)},
     }
@@ -287,6 +290,8 @@ def build_arms(corpus, poisons, live, manifest):
 
 def run_arm(llm, cfg, targets, clean, aliases, n_trusted):
     docs = list(cfg["docs"])
+    # trusted (non-poison) chunks available before this arm's filters; arm 8 re-chunks the corpus
+    n_trusted = cfg.get("pool_trusted", sum(1 for d in docs if not d.get("is_poison")) if cfg.get("pool") is None else n_trusted)
     info = {"pool": cfg.get("pool", len(docs)), "after_ingest_filters": len(docs)}
     if cfg.get("screen"):
         flagged = screen(docs, embed([d["text"] for d in docs]))

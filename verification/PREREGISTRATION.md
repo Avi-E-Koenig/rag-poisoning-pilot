@@ -59,3 +59,13 @@ Target → article map used by arms 7′ and 8: penicillin→Penicillin, polio�
 - All arms × 3 poison sets are run once, from one commit, whose git SHA is recorded in each results file.
 - If something fails to run (e.g. Wikipedia is unreachable), it is reported as failed, not dropped.
 - Generator-size sweeps, parameter sweeps and the fresh-corpus rebuild are **exploratory** (Phase E).
+
+---
+
+## Deviations log (appended after the pre-registration commit; original text above unchanged)
+
+| # | When (UTC) | Deviation | Why | Effect |
+|---|---|---|---|---|
+| D1 | 2026-11-15 ~20:20 | **Bug fix in the screening calibration** (`exp_v2.screen`). The first Phase D run calibrated the keyword-stuffing threshold on *ground-truth* clean docs (`not is_poison`). Upstream, and our pre-registration ("as upstream"), calibrate on docs *tagged* `trusted`, which in the compromised arms includes the relabeled poison. | The ground-truth version leaks information a real defender doesn't have, and it contradicts the pre-registered spec. It was found when S0 arm 4 gave 8/20 against upstream's 17/20. | That partial run (S0 complete, S1 arms 1–2) is kept, unanalyzed, in `runs/phaseD_superseded/`. All three poison sets were rerun from the fixed commit. |
+| D2 | same | **Metric bookkeeping:** "trusted false-rejections" for arm 8 is now counted against that arm's own re-chunked non-poison pool rather than against 759. | Arm 8 re-chunks the corpus, so a fixed denominator of 759 was meaningless. | Reporting only. No arm outcome changes. |
+| D3 | 2026-11-15 ~19:45 | Embedding batch size set to 16 | Out-of-memory kills on the 8 GB WSL machine | None (identical embeddings) |
