@@ -34,6 +34,8 @@ Requirements: Linux x86-64 (WSL2 works), `curl`, `git`, [`uv`](https://docs.astr
 
 ## Known sources of difference
 
+- **llama-server is not bit-exact across runs**, even with the same build, threads and inputs at temperature 0. Rerunning S0 with identical code changed 2 of 20 answers in arm 8 and 1 in arm 8nv, by a few trailing tokens. Arm 8 moved from 9 to 10/20; arms 1, 3, 7′ and 9 were identical. `reproduce.sh` therefore counts a difference of **±1/20 per arm** as reproduced and prints per-question agreement.
+
 - **Thread count and CPU type.** llama.cpp at temperature 0 is deterministic for a fixed build, thread count and CPU instruction set, but it can differ by a token across machines. Phase D used `--threads 8`; set it with `--threads-d`.
 - **R2 arm 7** (upstream code) always fetches Wikipedia live, so its trusted-chunk count drifts as articles are edited. This is finding F5. Our arm 7′ uses the pinned snapshot.
 - **`--fresh`** changes the canonical text for arm 7′, so expect differences in trusted false-rejections.
