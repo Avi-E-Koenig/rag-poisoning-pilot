@@ -182,6 +182,14 @@ def main():
            f'{grid}{"".join(bars)}</svg>')
     md_tables = (V / "RESULTS.md").read_text()
 
+    import re as _re
+
+    def inline(t):
+        t = html.escape(t)
+        t = _re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', t)
+        t = _re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
+        return _re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
+
     def md_to_html_tables(md):
         out, in_t = [], False
         for line in md.splitlines():
@@ -193,7 +201,7 @@ def main():
                 if not in_t:
                     out.append("<div class='tw'><table>")
                     in_t = True
-                out.append("<tr>" + "".join(f"<{tag}>{html.escape(c).replace('**', '')}</{tag}>" for c in cells) + "</tr>")
+                out.append("<tr>" + "".join(f"<{tag}>{inline(c)}</{tag}>" for c in cells) + "</tr>")
             else:
                 if in_t:
                     out.append("</table></div>")
@@ -203,9 +211,9 @@ def main():
                 elif line.startswith("### "):
                     out.append(f"<h3>{html.escape(line[4:])}</h3>")
                 elif line.startswith("- "):
-                    out.append(f"<p class='note'>{html.escape(line[2:]).replace('**', '')}</p>")
+                    out.append(f"<p class='note'>{inline(line[2:])}</p>")
                 elif line.strip() and not line.startswith("# "):
-                    out.append(f"<p class='note'>{html.escape(line).replace('`', '')}</p>")
+                    out.append(f"<p class='note'>{inline(line)}</p>")
         if in_t:
             out.append("</table></div>")
         return "\n".join(out)
@@ -228,7 +236,7 @@ svg{{width:100%;height:auto}} .lbl{{fill:var(--ink);font-size:12px}} .val{{fill:
 .s1{{fill:var(--s1)}} .s2{{fill:var(--s2)}} .ci{{stroke:var(--ink);stroke-width:1.5}}
 .hit:hover rect,.hit:focus rect{{opacity:.8}}
 .tw{{overflow-x:auto}} table{{border-collapse:collapse;font-size:13px;margin:8px 0;min-width:560px}}
-th,td{{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}} th{{color:var(--ink2);font-weight:600}}
+th,td{{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}} th{{color:var(--ink2);font-weight:600}} code{{font-size:12px}} a{{color:var(--s1)}}
 </style></head><body><main>
 <h1>RAG Poisoning Verification</h1>
 <p class="sub">Attack success by defense arm, pooled over {len(names)} poison set(s). Bars: generation ASR (with Wilson 95% CI) and retrieval ASR. Hover a bar for exact values.</p>
