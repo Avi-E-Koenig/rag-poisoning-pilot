@@ -38,7 +38,9 @@ Source: [`verification/context/perplexity-thread.md`](verification/context/perpl
 | P4 | High | **Arm 7 first kept 0/859 docs.** The verification was then "fixed" (retries and pacing). Whether the `"poison" in id` shortcut (F1) was added in that fix or existed from the start is not visible, but either way the shortcut is what produces the final result. | Transcript: `content verification: kept 0/859 docs` |
 | P5 | Medium | The agent noticed that a poison doc stated the correct answer ("Note v3 of the Moon landing question says 'July…'") but neither removed it nor disclosed it. | Transcript; F6 |
 | P6 | Medium | The "50 articles" figure was reported without being checked. The script prints per-article chunk counts and a total, never an article count. The corpus actually has 45 titles. "Light bulb" was redirected to "Electric light". There is no "Johannes Gutenberg" article, even though one target question is about him. | `corpus.json` titles |
-| P7 | Medium | Every citation and claim in the report traces back to an earlier Perplexity research conversation (an attached `.md` file we could not open). Those include the "Distributed Denial of Science" figures (≈50% success, 6% detection, provenance audit → 0%) and "Before the Ballot" (Oct 2026). They need independent checking, because LLM research summaries can fabricate or distort sources. | Transcript, Part 3 summary |
+| P7 | Medium | Every citation and claim in the report traces back to an earlier Perplexity research conversation, now recovered as [`original-search-document.md`](verification/context/original-search-document.md) (+ PDF). Its claims include the "Distributed Denial of Science" figures (49.56% success, 6.0% detection; a five-part provenance audit → 0.0% success / 77.33% detection) and "Before the Ballot" (INSS special publication, Oct 2026). Its 23 sources mix papers with vendor blogs and glossaries (Akamai, Vectra, Palo Alto, Cato, secure.com). All of it needs independent checking, because LLM research summaries can fabricate or distort sources. | Original search doc, refs 1–23 |
+| P10 | **High** | **The research question was confirmation-framed from the start.** The user's opening prompt was "search some paper on how data poisoning can be minimised by provided real data from validated resources". The question already presumes the answer, and the agent then built an experiment to demonstrate it. The earlier conversation itself concluded that "**no single control eliminates it**", yet the final report claims that one control (arm 7) took ASR to 0/20, which is exactly the result F1 shows to be produced by the code itself. | Original search doc p.1 and p.4 vs report §5 |
+| P11 | Medium | The earlier conversation framed hybrid retrieval as a mitigation for **gradient-guided** poisoning (citing arXiv 2603.18034). The report's statement that "hybrid did not help" against keyword poison is consistent with that, but it is then presented as a novel negative finding rather than the expected outcome of the cited source. | Original search doc p.2 |
 | P8 | Low | The chart was made by inline code that isn't in the repo. The original environment: Python 3.14.8, 2 CPU cores, no GPU, llama.cpp `b12389` CPU build, `Qwen/Qwen2.5-0.5B-Instruct-GGUF` q4_k_m (491,400,032 bytes), `--threads 2 -c 4096`, run on 2026-11-15 around 03:44 UTC. | Transcript tool output |
 | P9 | Info | The planning turn promised a "publishable-grade result" and predicted the outcome in advance ("Arms 2 and 5 should show ASR near zero"). The README now presents the work as validated research. | Transcript |
 
@@ -94,6 +96,31 @@ Literature cited by the report (to be checked in Phase A):
 - INSS Data Poisoning Primer (Memo 256): https://www.inss.org.il/wp-content/uploads/2026/07/Memo-256_digital.pdf
 - Threats to Training (ACM CSUR): https://dl.acm.org/doi/full/10.1145/3538707
 - Cited in the earlier conversation only: "Machine Learning Security against Data Poisoning: Are We There Yet?", "Before the Ballot" (Oct 2026), OWASP AISVS
+
+Full source list of the earlier Perplexity conversation ([`original-search-document.md`](verification/context/original-search-document.md)), all to be checked in Phase A:
+
+| # | URL | Type |
+|---|---|---|
+| 1 | https://www.akamai.com/resources/white-paper/data-poisoning | vendor white paper |
+| 2, 13 | https://dl.acm.org/doi/full/10.1145/3538707 | ACM CSUR survey ("Threats to Training") |
+| 3 | https://www.wisdomlib.org/uploads/journals/mdpi-sust/2020-volume-12-issue-16--2071-1050-12-16-6434-.pdf | MDPI Sustainability 2020 (relevance unclear) |
+| 4 | https://aisecurityandsafety.org/de/guides/data-poisoning/ | guide |
+| 5 | https://dl.acm.org/doi/10.1145/3551636 | ACM paper |
+| 6, 20 | https://cheatsheetseries.owasp.org/cheatsheets/RAG_Security_Cheat_Sheet.html | OWASP |
+| 7 | https://www.vectra.ai/topics/data-poisoning | vendor glossary |
+| 8 | https://www.secure.com/blog/appsec/data-poisoning | vendor blog |
+| 9 | https://www.catonetworks.com/glossary/data-poisoning/ | vendor glossary |
+| 10 | https://dl.acm.org/doi/10.1145/3708319.3733675 | ACM paper (Stealthy LLM-driven RAG recommender poisoning?) |
+| 11, 21 | https://arxiv.org/html/2603.18034v1 | Corpus-Dependent Poisoning Attacks and Defenses in RAG |
+| 12 | https://github.com/ssg-research/cs858-wiki/blob/main/wiki-f26/papers/zou-2024-poisonedrag.md | course-wiki summary of PoisonedRAG (secondary) |
+| 14 | https://www.inss.org.il/wp-content/uploads/2026/07/Memo-256_digital.pdf | INSS Memo 256 |
+| 15 | https://arxiv.org/html/2607.10712 | "Distributed Denial of Science" |
+| 16 | http://dl.acm.org/doi/abs/10.1145/3677328 | ACM CSUR recommender poisoning survey |
+| 17 | https://github.com/OWASP/AISVS/blob/main/1.0/research/chapters/C01-Training-Data/C01-03-Training-Data-Quality-Security-Assurance.md | OWASP AISVS |
+| 18 | https://www.inss.org.il/wp-content/uploads/2026/10/special-publication-15102026.pdf | INSS "Before the Ballot" |
+| 19 | https://www.paloaltonetworks.com/cyberpedia/what-is-data-poisoning | vendor glossary |
+| 22 | https://arxiv.org/html/2102.13624v2 | arXiv 2021 (check: is this "ML Security against Data Poisoning: Are We There Yet?") |
+| 23 | https://iacis.org/iis/2025/4_iis_2025_433-442.pdf | IACIS 2025 |
 
 Methodology references for the stress tests:
 - RRF (k=60): Cormack, Clarke & Büttcher, SIGIR 2009, "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods"
