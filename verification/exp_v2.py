@@ -80,7 +80,8 @@ _embedder = TextEmbedding(EMBED_MODEL)
 
 
 def embed(texts):
-    return np.array(list(_embedder.embed(texts)))
+    # small batches: avoids OOM on 8 GB WSL; does not change embeddings
+    return np.array(list(_embedder.embed(texts, batch_size=16)))
 
 
 class VectorRetriever:
