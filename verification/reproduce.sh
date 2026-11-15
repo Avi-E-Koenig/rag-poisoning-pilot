@@ -6,18 +6,20 @@
 #                 verification/runs/phaseD/live_canon.json, so results are reproducible offline)
 #   --skip-r2     skip the R2 anchor run (unmodified upstream script)
 #   --threads-d N llama.cpp threads for Phase D (default 8, as in our runs)
+#   --resume DIR  continue an interrupted run in DIR (completed arms are skipped); implies --skip-r2
 #
 # Requirements: Linux x86-64, curl, git, uv (https://docs.astral.sh/uv/), ~6 GB free RAM, ~1 GB disk.
 # Runs everything sequentially (two embedding processes at once OOM on an 8 GB machine).
 # Output goes to verification/repro/<timestamp>/ — our committed results are never overwritten.
 set -euo pipefail
 
-FRESH=0; SKIP_R2=0; THREADS_D=8
+FRESH=0; SKIP_R2=0; THREADS_D=8; RESUME=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --fresh) FRESH=1 ;;
     --skip-r2) SKIP_R2=1 ;;
     --threads-d) THREADS_D="$2"; shift ;;
+    --resume) RESUME="$2"; SKIP_R2=1; shift ;;
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
   shift
@@ -25,7 +27,7 @@ done
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 CACHE="${REPRO_CACHE:-$HOME/.cache/rag-poisoning-verification}"
-OUT="$REPO/verification/repro/$(date -u +%Y%m%dT%H%M%SZ)"
+OUT="${RESUME:-$REPO/verification/repro/$(date -u +%Y%m%dT%H%M%SZ)}"
 LLAMA_TAG=b12389
 LLAMA_URL="https://github.com/ggml-org/llama.cpp/releases/download/$LLAMA_TAG/llama-$LLAMA_TAG-bin-ubuntu-x64.tar.gz"
 MODEL_URL="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf"
@@ -83,7 +85,7 @@ fi
 log "5/6 Phase D: pre-registered arms x poison sets S0,S1,S2 (--threads $THREADS_D)"
 start_server 8081 "$THREADS_D"
 mkdir -p "$OUT/phaseD"
-if [[ $FRESH -eq 0 ]]; then
+if [[ $FRESH -eq 0 && ! -f "$OUT/phaseD/live_canon.json" ]]; then
   cp verification/runs/phaseD/live_canon.json "$OUT/phaseD/"   # pinned Wikipedia snapshot
 fi
 for S in S0 S1 S2; do

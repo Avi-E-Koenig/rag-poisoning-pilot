@@ -40,6 +40,14 @@ Requirements: Linux x86-64 (WSL2 works), `curl`, `git`, [`uv`](https://docs.astr
 - **R2 arm 7** (upstream code) always fetches Wikipedia live, so its trusted-chunk count drifts as articles are edited. This is finding F5. Our arm 7′ uses the pinned snapshot.
 - **`--fresh`** changes the canonical text for arm 7′, so expect differences in trusted false-rejections.
 
+## Pausing and resuming
+
+Stop the run at any time (Ctrl-C). Completed arms are saved after each arm. To continue:
+
+```bash
+bash verification/reproduce.sh --resume verification/repro/<timestamp>
+```
+
 ## Regenerating the reports only
 
 ```bash
