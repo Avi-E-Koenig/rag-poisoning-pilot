@@ -4,3 +4,5 @@ llama.log
 __pycache__/
 *.gguf
 *.tar.gz
+.venv/
+__pycache__/
