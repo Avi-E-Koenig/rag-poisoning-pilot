@@ -1,4 +1,4 @@
-# Auditing an AI-Generated Research Result: Does "Content Verification" Really Stop RAG Poisoning?
+# Red-Teaming Our Own AI-Generated Research: Does "Content Verification" Really Stop RAG Poisoning?
 
 *Apart Research AI x Epistemics Sprint, November 13–15, 2026. Tracks: 2 (Trust Infrastructure) and 4 (Open).*
 
@@ -8,13 +8,13 @@
 
 ## Abstract
 
-Research agents can now produce a complete study in under an hour: question, code, data, report and repository. Does such a result survive independent verification? We audit a public RAG-poisoning pilot that an autonomous agent generated end to end during this sprint. It claims that a source allowlist stops external poisoning (18/20 → 0/20) and that content verification against the canonical source is the *only* defense that stops a compromised trusted source (18/20 → 0/20). We apply a four-layer audit: code and data, the agent's session transcript, citations, and a pre-registered reproduction. The headline content-verification result is **produced by the code itself**: poison is rejected by the string "poison" in its document ID. The transcript shows the two "successful" arms were added after the planned arms failed, and the results file mixes several code versions. Three of six references contain errors, one pointing to an unrelated radiotherapy paper. With the original binary and model hash, the unmodified pipeline reproduces 5 of 7 arms exactly. In our pre-registered extension (3 poison sets, 60 trials per arm), honest content verification blocks poison only while the canonical source is clean (0/60). It gives **no protection once that source is poisoned** (26/60 with vs 25/60 without; McNemar p = 1.0). A simple ingestion-time hash manifest matches its protection with zero false rejections. We release a one-command reproduction and a reviewer checklist.
+Research agents can now produce a complete study in under an hour: question, code, data, report and repository. Does such a result survive verification? We red-team our own team's RAG-poisoning pilot, which an autonomous agent (Perplexity "Computer") generated end to end during this sprint. It claims that a source allowlist stops external poisoning (18/20 → 0/20) and that content verification against the canonical source is the *only* defense that stops a compromised trusted source (18/20 → 0/20). We apply a four-layer audit: code and data, the agent's session transcript, citations, and a pre-registered reproduction. The headline content-verification result is **produced by the code itself**: poison is rejected by the string "poison" in its document ID. The transcript shows the two "successful" arms were added after the planned arms failed, and the results file mixes several code versions. Three of six references contain errors, one pointing to an unrelated radiotherapy paper. With the original binary and model hash, the unmodified pipeline reproduces 5 of 7 arms exactly. A pre-registered extension (3 poison sets, 60 trials per arm) makes the threat-model gap concrete. Honest content verification blocks poison only while the canonical source is clean, at the cost of 5.5% of trusted chunks. Once that source is poisoned it gives **no protection** (26/60 vs 25/60). Both outcomes follow from the design; what we measure are the costs and a dilution effect. We release a one-command reproduction and a reviewer checklist.
 
 ## 1. Introduction
 
 Agents lower the cost of producing research-shaped artifacts much faster than they lower the cost of checking them. When an agent produces hypotheses, a seven-arm design, a chart, a limitations section, citations and a GitHub repository, it has produced every surface signal of rigor. Whether the claims are true is a separate question. That gap is an epistemic-infrastructure problem: **what does it take to verify an AI-generated result, and which failure modes should a reviewer expect?**
 
-We study one concrete case: a RAG-poisoning pilot that an autonomous agent designed, ran, wrote up and pushed to GitHub in a single 34-minute session on the final day of this sprint. The topic suits a credibility audit, because it is about provenance and verification. The study's own conclusion, "verify the *content's* provenance, not just the *source label*", applies to the study itself.
+We study one concrete case, our own: a RAG-poisoning pilot that an autonomous agent designed, ran, wrote up and pushed to our team's GitHub in a single 34-minute session on the final day of this sprint. We then red-teamed it as if a stranger had written it. The topic suits a credibility audit, because it is about provenance and verification. The study's own conclusion, "verify the *content's* provenance, not just the *source label*", applies to the study itself.
 
 **Contributions.**
 1. A four-layer audit protocol (code and data, session provenance, citations, pre-registered reproduction) applied to a real agent-generated study (§3).
@@ -36,7 +36,7 @@ We study one concrete case: a RAG-poisoning pilot that an autonomous agent desig
 
 ### 3.1 Subject
 
-The audited repository is `Blobi92/rag-poisoning-pilot` (commits `8595a09` and `21d541f`, both `Co-authored-by: Perplexity`).
+The audited repository is `Blobi92/rag-poisoning-pilot` (commits `8595a09` and `21d541f`, both `Co-authored-by: Perplexity`). **Disclosure:** a member of our team created this pilot during this sprint (2026-11-15) by prompting Perplexity's agent. The agent did all of the design, code, runs and write-up; the team member contributed only the initial research prompt. Our audit is new sprint work, in branch `verify/plan` of the fork.
 - **Corpus:** 759 Wikipedia chunks (600 words, 100-word overlap).
 - **Attack:** 100 LLM-generated poison documents, 5 per target question.
 - **Questions:** 20 targets with an attacker answer each, and 10 clean controls.
@@ -145,7 +145,17 @@ The cited figures are quoted accurately. However, the "provenance-audit literatu
 | Honest content verification, clean canonical (K3) | 0/60, with some false rejections | 0/60; 42 chunks (5.5%) dropped per set | ✔ |
 | **Content verification against a poisoned canonical (K3)** | Arm 8 ≈ 8nv | **26/60 vs 25/60, McNemar p = 1.0** | ✔ |
 | Snapshot manifest | 0/60, 0 false rejections | 0/60, 0 dropped | ✔ |
-| Defenses keep clean accuracy (K4) | ≥ 9/10 except where chunks are dropped (7′) | 7′: 24/30 (both misses caused by failed fetches); others 27–29/30 | ✔ |
+| Defenses keep clean accuracy (K4) | ≥ 9/10 except where chunks are dropped (7′) | 7′: 24/30 (one miss per set from the failed Penicillin fetch; one generator error that the allowlist arm also makes); others 27–29/30 | ✔ |
+
+**What is measured, and what follows from the design.** We apply our own construction check (Appendix B, item 3) to our arms. The ASR outcomes of 7′, 8 and 9 are largely *determined by their design*:
+- **7′ = 0:** LLM-written poison is never a substring of the real article.
+- **8 ≈ 8nv:** verification against the same poisoned canonical text passes every poisoned chunk.
+- **9 = 0:** the poison is never in the ingestion manifest.
+
+We pre-registered these as predictions, not discoveries. They make the threat-model gap concrete. The quantities that are genuinely measured are:
+- the **cost** of live verification: 42 trusted chunks (5.5%) dropped per set, and clean accuracy down from 27/30 to 24/30;
+- the **dilution effect**: spliced poison wins 26/60 answers vs 56/60 for standalone documents;
+- the **reproduction** itself.
 
 **Additional observations:**
 - **Verification adds nothing against a poisoned source.** Content verification behaves exactly as designed: it passes every spliced poison chunk (113–114 per set), because they *are* the canonical text.
@@ -159,7 +169,7 @@ The cited figures are quoted accurately. However, the "provenance-audit literatu
 | Report claim | Verdict | Reason |
 |---|---|---|
 | Content verification "drove the compromised-source attack to 0/20" | **By construction** | The shipped code rejects poison by ID |
-| Content verification is "the only defense that closed the loop" | **Not supported** | Honest content verification works only when the canonical source is *not* compromised. A static hash manifest gives the same protection with no network dependency and no false rejections. Neither helps once the canonical source itself is poisoned. |
+| Content verification is "the only defense that closed the loop" | **Not supported** | Content verification can only detect tampering *between* the source and the corpus. It is logically blind to a compromised source, which is the scenario the claim is about, and our arm 8 illustrates that. A hash manifest gives the same post-ingestion protection without a live fetch (0 false rejections vs 5.5%). |
 | "Verify the content's provenance, not just the source label" | Sound as a principle | What the experiment actually shows is weaker: content verification is only as good as the integrity of the reference it checks against |
 
 **What went wrong, and is it typical?** Each failure we found is a known human failure mode that the agent's speed amplified:
@@ -180,7 +190,7 @@ Each is cheap for an agent to produce and expensive for a reviewer to reconstruc
 
 ## 6. Conclusion
 
-An AI-generated study on verifying content provenance failed its own standard: its key result came from its code, not from its data. Once that is fixed, the honest finding is narrower and more useful. Content verification is a tamper-detection control that is only as trustworthy as its reference. Against a compromised upstream source it provides nothing, and an ingestion-time snapshot manifest offers the same protection more cheaply. Auditing the *process* (transcript, pre-registration, single-version results) caught what auditing the *artifact* could not.
+Our own AI-generated study on verifying content provenance failed its own standard: its key result came from its code, not from its data. Once that is fixed, the honest finding is narrower and more useful. Content verification is a tamper-detection control that is only as trustworthy as its reference. It is blind to a compromised upstream source by design. An ingestion-time snapshot manifest offers the same post-ingestion protection without the 5.5% false-rejection cost of live re-fetching. We hold our own extension to the same standard: its headline outcomes follow from the design, and its measured contributions are the costs, the dilution effect and the reproduction. Auditing the *process* (transcript, pre-registration, single-version results) caught what auditing the *artifact* could not.
 
 ## References
 
@@ -192,12 +202,13 @@ An AI-generated study on verifying content provenance failed its own standard: i
 6. Wang, Z. et al. Threats to Training: A Survey of Poisoning Attacks and Defenses on Machine Learning Systems. ACM Computing Surveys (2022). doi:10.1145/3538707
 7. Cormack, G. V., Clarke, C. L. A., Büttcher, S. Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods. SIGIR 2009.
 8. Gelman, A., Loken, E. The garden of forking paths (2013).
-9. Audited artifact: Blobi92/rag-poisoning-pilot, https://github.com/Blobi92/rag-poisoning-pilot
+9. Audited artifact (our team's sprint pilot): Blobi92/rag-poisoning-pilot, https://github.com/Blobi92/rag-poisoning-pilot
 
 ## Appendix A: Limitations and Dual-Use / Ethical Considerations
 
 **What this establishes.**
-- The upstream headline result is produced by its code.
+- The pilot's headline result is produced by its code.
+- Our arms 7′, 8 and 9 illustrate the logical limits of content verification. They do not discover them; their ASR outcomes follow from the design.
 - The pipeline reproduces with pinned artifacts.
 - Under pre-registered tests, content verification does not protect against a compromised canonical source in this setup.
 
@@ -210,7 +221,7 @@ An AI-generated study on verifying content provenance failed its own standard: i
 
 **Dual use.** The poison documents are low-sophistication, LLM-generated false claims about well-known facts. Our arm 8 shows that poisoning an *upstream* source defeats content verification. That is already the documented threat model in the RAG-security literature, and we release no new attack technique. The audit method could be misused to discredit legitimate work. We mitigate this by reporting what reproduces as well as what does not, by publishing every artifact, and by pre-registering.
 
-**People and data.** We audited a public repository and a session transcript that its author shared publicly. We removed account names and personal details from the transcript we republish. No personal data is processed; the corpus is public Wikipedia text.
+**People and data.** We audited our own team's public repository and agent session transcript. We removed account names and personal details from the transcript we republish. No personal data is processed; the corpus is public Wikipedia text.
 
 **AI use.** This audit was carried out with an AI coding assistant (Claude). All code, runs and numbers are committed with git SHAs, and every claim in this report links to a reproducible artifact.
 
