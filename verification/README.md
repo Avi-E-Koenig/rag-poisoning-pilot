@@ -13,6 +13,10 @@ An independent credibility audit of the upstream pilot ([Blobi92/rag-poisoning-p
 | [`exp_v2.py`](exp_v2.py) | Phase D experiment: arms 1–6, honest 7′, compromised canonical 8 / 8-noverify, snapshot 9 |
 | [`gen_poison_seeded.py`](gen_poison_seeded.py) | Upstream poison prompt with explicit seeds (poison sets S1, S2) |
 | [`requirements.lock`](requirements.lock) | Pinned Python environment |
+| [`REPRODUCE.md`](REPRODUCE.md), [`reproduce.sh`](reproduce.sh) | One-command reproduction |
+| [`REPRO_CHECK.md`](REPRO_CHECK.md) | Independent rerun verdict: REPRODUCED (all arms within ±1/20) |
+| [`REPORT.md`](REPORT.md), [`RESULTS.md`](RESULTS.md), [`results.html`](results.html) | Sprint report, results tables, interactive chart |
+| [`UPSTREAM_ISSUE.md`](UPSTREAM_ISSUE.md) | Draft issue for upstream (not filed) |
 | [`runs/r2/`](runs/r2/) | Phase B anchor run: the unmodified upstream script, all 7 arms, original llama.cpp build |
 | [`runs/phaseD/`](runs/phaseD/) | Phase D results per poison set, plus the live Wikipedia canonical snapshot |
 | [`context/perplexity-thread.md`](context/perplexity-thread.md) | Transcript of the agent session that produced the upstream repo |

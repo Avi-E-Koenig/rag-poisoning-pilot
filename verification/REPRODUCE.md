@@ -1,5 +1,7 @@
 # Reproducing the verification
 
+> **Verified:** an independent run of this script from an empty cache reproduced every Phase D arm within ±1/20 (27/30 exactly). See [`REPRO_CHECK.md`](REPRO_CHECK.md).
+
 One command reruns everything from a clean clone:
 
 ```bash
