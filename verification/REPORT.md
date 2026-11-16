@@ -2,7 +2,7 @@
 
 *Apart Research AI x Epistemics Sprint, November 13–15, 2026. Tracks: 2 (Trust Infrastructure) and 4 (Open).*
 
-**Authors:** _[names / affiliations]_
+**Authors:** Avi E. Koenig ([@Avi-E-Koenig](https://github.com/Avi-E-Koenig)) · Blobi92 ([@Blobi92](https://github.com/Blobi92)), independent
 
 **Code, data and one-command reproduction:** https://github.com/Avi-E-Koenig/rag-poisoning-pilot/tree/verify/plan/verification. An independent rerun from an empty cache reproduced all 30 Phase D arm runs within ±1/20, 27 of them exactly (`verification/REPRO_CHECK.md`).
 
