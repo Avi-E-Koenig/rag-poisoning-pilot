@@ -1,4 +1,4 @@
-# DRAFT: issue for Blobi92/rag-poisoning-pilot (not filed; for review)
+# Upstream issue — FILED as https://github.com/Blobi92/rag-poisoning-pilot/issues/1 (2026-11-16)
 
 **Title:** Arm 7 "content verification" rejects poison by document ID, plus a citation fix and a corpus-count fix
 

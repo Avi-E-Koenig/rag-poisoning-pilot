@@ -16,7 +16,7 @@ An independent credibility audit of the upstream pilot ([Blobi92/rag-poisoning-p
 | [`REPRODUCE.md`](REPRODUCE.md), [`reproduce.sh`](reproduce.sh) | One-command reproduction |
 | [`REPRO_CHECK.md`](REPRO_CHECK.md) | Independent rerun verdict: REPRODUCED (all arms within ±1/20) |
 | [`REPORT.md`](REPORT.md), [`RESULTS.md`](RESULTS.md), [`results.html`](results.html) | Sprint report, results tables, interactive chart |
-| [`UPSTREAM_ISSUE.md`](UPSTREAM_ISSUE.md) | Draft issue for upstream (not filed) |
+| [`UPSTREAM_ISSUE.md`](UPSTREAM_ISSUE.md) | Issue filed upstream: [Blobi92/rag-poisoning-pilot#1](https://github.com/Blobi92/rag-poisoning-pilot/issues/1) |
 | [`runs/r2/`](runs/r2/) | Phase B anchor run: the unmodified upstream script, all 7 arms, original llama.cpp build |
 | [`runs/phaseD/`](runs/phaseD/) | Phase D results per poison set, plus the live Wikipedia canonical snapshot |
 | [`context/perplexity-thread.md`](context/perplexity-thread.md) | Transcript of the agent session that produced the upstream repo |
