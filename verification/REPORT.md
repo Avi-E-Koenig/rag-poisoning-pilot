@@ -4,6 +4,8 @@
 
 **Authors:** Avi E. Koenig ([@Avi-E-Koenig](https://github.com/Avi-E-Koenig)) · Blobi92 ([@Blobi92](https://github.com/Blobi92)), independent
 
+**Submission version (Google Doc):** https://docs.google.com/document/d/1U5SKI9ILjohPyRouHTqpTQRH-gSPhY0adfFQn36UMQ0/edit · **Pull request:** https://github.com/Avi-E-Koenig/rag-poisoning-pilot/pull/1
+
 **Code, data and one-command reproduction:** https://github.com/Avi-E-Koenig/rag-poisoning-pilot/tree/verify/plan/verification. An independent rerun from an empty cache reproduced all 30 Phase D arm runs within ±1/20, 27 of them exactly (`verification/REPRO_CHECK.md`).
 
 ## Abstract

@@ -2,6 +2,12 @@
 
 An independent credibility audit of the upstream pilot ([Blobi92/rag-poisoning-pilot](https://github.com/Blobi92/rag-poisoning-pilot)). The pilot was produced end to end by an AI agent (Perplexity "Computer") during the [Apart AI x Epistemics sprint](context/apart-sprint.md).
 
+## Links
+
+- **Sprint submission (Google Doc, Apart template):** https://docs.google.com/document/d/1U5SKI9ILjohPyRouHTqpTQRH-gSPhY0adfFQn36UMQ0/edit
+- **Pull request with all verification work:** https://github.com/Avi-E-Koenig/rag-poisoning-pilot/pull/1
+- **Issue filed upstream:** https://github.com/Blobi92/rag-poisoning-pilot/issues/1
+
 ## Index
 
 | File | What it is |
