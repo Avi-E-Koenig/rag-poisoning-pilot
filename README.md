@@ -1,3 +1,5 @@
+> **Verification audit of this pilot:** see [`verification/`](verification/README.md) · [PR #1](https://github.com/Avi-E-Koenig/rag-poisoning-pilot/pull/1) · [Sprint submission (Google Doc)](https://docs.google.com/document/d/1U5SKI9ILjohPyRouHTqpTQRH-gSPhY0adfFQn36UMQ0/edit) · [Upstream issue](https://github.com/Blobi92/rag-poisoning-pilot/issues/1)
+
 # Can Validated Data Stop RAG Poisoning?
 
 A one-day controlled experiment testing whether validated-source ingestion
